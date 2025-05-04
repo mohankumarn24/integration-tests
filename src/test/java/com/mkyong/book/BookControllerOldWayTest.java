@@ -1,6 +1,7 @@
 package com.mkyong.book;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BookControllerOldWayTest {
@@ -42,9 +43,7 @@ public class BookControllerOldWayTest {
      * postgres:15-alpine
      * PostgreSQL version 15 using the lightweight Alpine Linux as the base image
      */
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-            "postgres:15-alpine"
-    );
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -56,39 +55,36 @@ public class BookControllerOldWayTest {
     @Test
     public void testBookEndpoints() {
 
-        // Create a new book
+        // getAll
+        List<Book> result = bookRepository.findAll();
+        Assertions.assertEquals(0, result.size());
+
+        // create a new book object
         Book book = new Book();
         book.setName("Is Java Dead?");
         book.setIsbn("111-111");
 
-        ResponseEntity<Book> createResponse =
-                restTemplate.postForEntity("/books", book, Book.class);
-        assertEquals(HttpStatus.OK, createResponse.getStatusCode());
+        // create
+        ResponseEntity<Book> createResponse = restTemplate.postForEntity("/books", book, Book.class);
+        Assertions.assertEquals(HttpStatus.OK, createResponse.getStatusCode());
         Book savedBook = createResponse.getBody();
+        Assertions.assertNotNull(savedBook);
+        Assertions.assertTrue("Is Java Dead?".equalsIgnoreCase(savedBook.getName()));
+        Assertions.assertTrue("111-111".equalsIgnoreCase(savedBook.getIsbn()));
 
-        assert savedBook != null;
+        // getById
+        ResponseEntity<Book> getResponse = restTemplate.getForEntity("/books/" + savedBook.getId(), Book.class);
+        Assertions.assertEquals(HttpStatus.OK, getResponse.getStatusCode());
+        Book bookFromGetById = getResponse.getBody();
+        Assertions.assertNotNull(bookFromGetById);
+        Assertions.assertTrue("Is Java Dead?".equalsIgnoreCase(bookFromGetById.getName()));
+        Assertions.assertTrue("111-111".equalsIgnoreCase(bookFromGetById.getIsbn()));
 
-        // Retrieve
-        ResponseEntity<Book> getResponse =
-                restTemplate.getForEntity("/books/" + savedBook.getId(), Book.class);
-        assertEquals(HttpStatus.OK, getResponse.getStatusCode());
-
-        Book bookFromGet = getResponse.getBody();
-
-        assert bookFromGet != null;
-
-        assertEquals("Is Java Dead?", bookFromGet.getName());
-        assertEquals("111-111", bookFromGet.getIsbn());
-
-        // Retrieve All
-        ResponseEntity<Book[]> getAllResponse =
-                restTemplate.getForEntity("/books", Book[].class);
-        assertEquals(HttpStatus.OK, getAllResponse.getStatusCode());
-
+        // getAll
+        ResponseEntity<Book[]> getAllResponse = restTemplate.getForEntity("/books", Book[].class);
+        Assertions.assertEquals(HttpStatus.OK, getAllResponse.getStatusCode());
         Book[] bookFromGetAll = getAllResponse.getBody();
-        assert bookFromGetAll != null;
-
-        assertEquals(1, bookFromGetAll.length);
+        Assertions.assertNotNull(bookFromGetAll);
+        Assertions.assertEquals(1, bookFromGetAll.length);
     }
-
 }

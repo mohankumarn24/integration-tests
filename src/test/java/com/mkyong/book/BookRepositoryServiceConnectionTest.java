@@ -7,9 +7,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
@@ -22,9 +20,7 @@ public class BookRepositoryServiceConnectionTest {
     @Container
     // When using Testcontainers, connection details can be automatically created for a service running in a container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-            "postgres:15-alpine"
-    );
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
 
     // With Spring Boot 3.1 and @ServiceConnection, no need this @DynamicPropertySource
     /*@DynamicPropertySource
@@ -36,9 +32,7 @@ public class BookRepositoryServiceConnectionTest {
 
     @Test
     public void testEmptyList() {
-
         List<Book> result = bookRepository.findAll();
         assertEquals(0, result.size());
-
     }
 }

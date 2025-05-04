@@ -14,6 +14,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// This example shows how to test the repository using only the @DataJpaTest and Testcontainers
 @DataJpaTest
 // do not replace the testcontainer data source
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
